@@ -1,0 +1,52 @@
+
+import datetime
+
+from odoo import models, fields, api
+
+
+class Visit(models.Model):
+    _name = 'custom_crm.visit'
+    _description = 'Visit'
+
+    name = fields.Char(string='Descripcion')
+    customer = fields.Many2one(string='Cliente', comodel_name='res.partner')
+    date = fields.Datetime(String='Fecha')
+    type = fields.Selection([('P','Presencial'), ('W','WhatsApp'), ('T','Telefonico')], string='Tipo', required=True)
+    done = fields.Boolean(string='Realizada', readonly=True)
+    image = fields.Binary(string='Imagen')
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        required=True,
+        readonly=True
+    )
+
+    def toggle_state(self):
+        self.done = not self.done
+
+    def f_create(self):
+        visit = {
+            'name':'ORM test',
+            'customer': 1,
+            'date': str(datetime.date(2026, 3, 30)),
+            'type':'P',
+            'done': False
+        }
+        print(visit)
+        self.env['custom_crm.visit'].create(visit)
+
+    def f_search_update(self):
+        visit = self.env['custom_crm.visit'].search([('name','=','ORM test')])
+        print('search()',visit, visit.name)
+
+        visit_b = self.env['custom_crm.visit'].browse([2])
+        print('browse()',visit_b, visit_b.name)
+
+        visit.write({
+            'name':'ORM test write'
+        })
+    
+    def f_delete(self):
+        visit=self.env['custom_crm.visit'].browse([2])
+        visit.unlink()
